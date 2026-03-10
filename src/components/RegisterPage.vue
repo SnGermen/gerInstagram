@@ -35,9 +35,11 @@ async function registration() {
 
   try {
     await auth.register(email.value, username.value, password.value)
+    alert('Registration successful!.')
+    router.push('/home')
   } catch (e: any) {
     console.error(e.response?.data) // <--- log full server response
-    alert(e.response?.data?.message || 'Rккккккккккккккккegistration error')
+    alert(e.response?.data?.message || 'Registration error')
   }
 }
 
@@ -48,5 +50,9 @@ function goLogin() {
 <style>
 input {
   color: black;
+}
+.link {
+  color: black;
+  cursor: pointer;
 }
 </style>

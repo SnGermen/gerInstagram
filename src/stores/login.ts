@@ -12,12 +12,10 @@ export const useAuthStore = defineStore('auth', () => {
       identifier,
       password,
     })
-
     token.value = data.token
     localStorage.setItem('token', token.value)
 
-    api.defaults.headers.common.Authorization = `Bearer ${token.value}`
-
+    api.defaults.headers.common.Authorization = `Bearer ${token.value}` //Теперь каждый запрос будет отправляться с таким токином
     await fetchMe()
   }
 
@@ -27,7 +25,6 @@ export const useAuthStore = defineStore('auth', () => {
       username,
       password,
     })
-
     await login(username, password)
   }
 
