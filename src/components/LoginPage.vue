@@ -26,11 +26,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useAuthStore } from '@/stores/login'
+import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const auth = useAuthStore()
+const auth = useUserStore()
 
 const username = ref('')
 const password = ref('')
@@ -44,7 +44,7 @@ async function login() {
 
   try {
     await auth.login(username.value, password.value)
-    router.push('/home')
+    router.push('/main')
   } catch (e) {
     alert('Invalid credentials')
   }
@@ -52,9 +52,6 @@ async function login() {
 </script>
 
 <style scoped>
-.link {
-  color: black;
-}
 .login {
   display: flex;
   flex-direction: column;
@@ -106,5 +103,10 @@ async function login() {
 }
 .active {
   background-color: #117efa;
+}
+.link {
+  color: black;
+  width: fit-content;
+  margin-top: 5px;
 }
 </style>
