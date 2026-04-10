@@ -8,7 +8,7 @@
             <img class="header_icon__img" src="../img\header_addbtn.png" alt="" />
           </button>
           <button class="header_icon">
-            <img class="header_icon__img" src="../img\whiteLike.png" alt="" />
+            <img class="header_icon__img like" src="../img\whiteLike.png" alt="" />
           </button>
           <button class="header_icon">
             <img class="header_icon__img" src="../img\header_messagebtn.png" alt="" />
@@ -88,6 +88,9 @@
 .iconDown {
   flex: 0 0 auto; /* ← чтобы не сжимались */
   text-align: center;
+}
+.like {
+  filter: invert();
 }
 
 .iconsDown_container {

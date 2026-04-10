@@ -44,10 +44,11 @@
 </template>
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user'
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import changePassword from './changePassword.vue'
 import logOut from './logOut.vue'
+import { p } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
@@ -79,6 +80,9 @@ function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  if (previewAvatarUrl.value) {
+    URL.revokeObjectURL(previewAvatarUrl.value)
+  }
 
   selectedAvatarFile.value = file
 
@@ -94,6 +98,11 @@ function getAvatarUrl() {
   }
   return `http://localhost:3000/api/v1/media/${user.value.avatarMediaId}?t=${Date.now()}`
 }
+onUnmounted(() => {
+  if (previewAvatarUrl.value) {
+    URL.revokeObjectURL(previewAvatarUrl.value)
+  }
+})
 </script>
 <style scoped>
 .update {

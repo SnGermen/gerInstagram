@@ -14,6 +14,12 @@ export const useUserStore = defineStore('auth', () => {
   if (token.value) {
     api.defaults.headers.common.Authorization = `Bearer ${token.value}`
   }
+  const isOwner = (id: any) => {
+    if (!user.value) {
+      return false
+    }
+    return user.value.authorId == id
+  }
 
   async function login(identifier: string, password: string) {
     const { data } = await api.post('/auth/login', {
@@ -92,6 +98,7 @@ export const useUserStore = defineStore('auth', () => {
 
     user.value = data.user
   }
+
   return {
     token,
     user,
@@ -99,6 +106,7 @@ export const useUserStore = defineStore('auth', () => {
     isAuth,
     bio,
     email,
+    isOwner,
     login,
     register,
     fetchMe,
