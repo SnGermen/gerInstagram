@@ -48,7 +48,6 @@ import { onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import changePassword from './changePassword.vue'
 import logOut from './logOut.vue'
-import { p } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
