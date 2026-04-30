@@ -18,7 +18,10 @@ export const useUserStore = defineStore('auth', () => {
     if (!user.value) {
       return false
     }
-    return user.value.authorId == id
+    if (!id) {
+      return false
+    }
+    return String(user.value.id) === String(id)
   }
 
   async function login(identifier: string, password: string) {
@@ -98,7 +101,12 @@ export const useUserStore = defineStore('auth', () => {
 
     user.value = data.user
   }
-
+  function getAvatarUrl() {
+    if (!user.value?.avatarMediaId) {
+      return '/src/img/profil_icon.png'
+    }
+    return `http://localhost:3000/api/v1/media/${user.value.avatarMediaId}?t=${Date.now()}`
+  }
   return {
     token,
     user,
@@ -115,5 +123,6 @@ export const useUserStore = defineStore('auth', () => {
     updateProfile,
     updatePassword,
     updateAvatar,
+    getAvatarUrl,
   }
 })

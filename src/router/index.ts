@@ -5,11 +5,14 @@ import RegisterPage from '@/components/RegisterPage.vue'
 import { useUserStore } from '@/stores/user'
 import ProfilePage from '@/components/ProfilePage.vue'
 import updateProfile from '@/views/updateProfile.vue'
+import SearchPage from '@/views/SearchPage.vue'
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: LoginPage },
   { path: '/register', component: RegisterPage },
   { path: '/profile', component: ProfilePage },
+  { path: '/profile/:userId', component: ProfilePage },
+  { path: '/search', component: SearchPage },
   { path: '/update-profile', component: updateProfile },
   { path: '/main', component: MainPage },
 ]

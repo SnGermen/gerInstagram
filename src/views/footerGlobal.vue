@@ -4,11 +4,8 @@
       <button class="footer_icon" @click="$router.push('/main')">
         <img class="footer_icon__img" src="../img\home_icon.png" alt="" />
       </button>
-      <button class="footer_icon">
+      <button class="footer_icon" @click="$router.push('/search')">
         <img class="footer_icon__img" src="../img\footer_search.png" alt="" />
-      </button>
-      <button class="footer_icon">
-        <img class="footer_icon__img" src="../img\footer_reels.png" alt="" />
       </button>
 
       <button class="footer_icon">
@@ -32,7 +29,7 @@ const router = useRouter()
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 100px;
+  height: 80px;
   background-color: black;
   display: flex;
   justify-content: center;

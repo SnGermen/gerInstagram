@@ -14,9 +14,9 @@
         <div class="section_up">
           <div class="user">
             <div class="user_icon">
-              <img :src="avatarUrl" alt="User image" class="user_img" />
+              <img :src="authorAvatarUrl" alt="User image" class="user_img" />
             </div>
-            <a class="user_name" href="/profile">{{ username }}</a>
+            <div class="user_name">{{ authorUsername }}</div>
           </div>
 
           <button class="cancel_btn" @click="emit('close')">
@@ -74,18 +74,37 @@
                   <div class="comment_body">
                     {{ comment.text || comment.content || comment.body }}
                   </div>
-                  <button class="comment_setting" @click="openSettings(comment, $event)">
-                    <img src="/src/img/kebabSsetting.png" alt="" />
-                  </button>
+                  <div class="comment_footer">
+                    <div class="comment_statistic">
+                      <button class="comment_like" @click="likeOrUnlikeThisComment(comment.id)">
+                        <img
+                          :src="
+                            likeStore.isCommentLiked(comment.id)
+                              ? '/src/img/redLike.png'
+                              : '/src/img/whiteLike.png'
+                          "
+                        />
+                      </button>
+                      <div class="comment_likeCount">{{ comment._count.likes }}</div>
+                    </div>
+                    <button
+                      class="comment_setting"
+                      v-if="canManageComment(comment)"
+                      @click="openSettings(comment, $event)"
+                    >
+                      <img src="/src/img/kebabSsetting.png" alt="" />
+                    </button>
+                  </div>
                 </div>
 
                 <commentSetting
                   :isCommentSettingOpen="isCommentSettingOpen"
-                  :comment="commentSetting"
+                  :comment="selectedComment"
                   :commentId="commentId"
                   @close="isCommentSettingOpen = false"
                   :x="menuPosition.x"
                   :y="menuPosition.y"
+                  :isPostOwner="isOwner"
                   @changeText="startEdit"
                 />
               </div>
@@ -94,8 +113,15 @@
         </div>
 
         <div class="comment_form">
-          <button class="global_like" @click="likePost()">
-            <img src="/src/img/whiteLike.png" alt="" />
+          <button class="global_like" @click="likeOrUnlikeThisPost()">
+            <img
+              :src="
+                likeStore.isPostLiked(currentPost.id)
+                  ? '/src/img/redLike.png'
+                  : '/src/img/whiteLike.png'
+              "
+            />
+            <div>{{ currentPost._count.likes }}</div>
           </button>
           <input
             v-model="newCommentText"
@@ -115,21 +141,21 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, type PropType } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { useCommentStore } from '@/stores/useCommentStore'
+import { useCommentStore } from '@/stores/comment'
 import { storeToRefs } from 'pinia'
 import { useMediaStore } from '@/stores/media'
 import commentSetting from './commentSetting.vue'
+import { useLikeStore } from '@/stores/likes'
 const userStore = useUserStore()
 const commentStore = useCommentStore()
 const mediaStore = useMediaStore()
+const likeStore = useLikeStore()
 const openComment = ref(null)
 const commentId = ref('')
 const isCommentSettingOpen = ref(false)
+const selectedComment = ref<any>(null)
 const editingCommentId = ref()
 const editingNewTextDescription = ref('')
-const ifEditindDescription = computed(
-  () => editingNewTextDescription.value !== (currentPost.value?.caption || ''),
-)
 const props = defineProps({
   post: Object as PropType<any>,
 })
@@ -138,15 +164,47 @@ const emit = defineEmits(['close'])
 const { username, user } = storeToRefs(userStore)
 const { comments } = storeToRefs(commentStore)
 const menuPosition = ref({ x: 0, y: 0 })
-const currentPost = computed(() => props.post || null)
-const isOwner = computed(() => userStore.isOwner(currentPost.value?.userId))
-const newCommentText = ref('')
-const isLiked = ref(false)
-const avatarUrl = computed(() =>
-  user.value?.avatarMediaId
-    ? `http://localhost:3000/api/v1/media/${user.value.avatarMediaId}?t=${Date.now()}`
-    : '/src/img/profil_icon.png',
+const currentPost = ref<any>(props.post || null)
+const postOwnerId = computed(
+  () =>
+    currentPost.value?.author?.id ||
+    currentPost.value?.userId ||
+    currentPost.value?.authorId ||
+    currentPost.value?.user?.id ||
+    null,
 )
+const isOwner = computed(() => userStore.isOwner(postOwnerId.value))
+const newCommentText = ref('')
+const ifEditindDescription = computed(
+  () => editingNewTextDescription.value !== (currentPost.value?.caption || ''),
+)
+const authorUsername = computed(() => currentPost.value?.author?.username || username.value)
+const authorAvatarUrl = computed(() => {
+  const avatarMediaId = currentPost.value?.author?.avatarMediaId || user.value?.avatarMediaId
+  if (!avatarMediaId) {
+    return '/src/img/profil_icon.png'
+  }
+  return `http://localhost:3000/api/v1/media/${avatarMediaId}?t=${Date.now()}`
+})
+
+const isCommentOwner = (comment: any) => {
+  if (!comment?.author?.id || !user.value?.id) {
+    return false
+  }
+  return String(comment.author.id) === String(user.value.id)
+}
+
+const canManageComment = (comment: any) => {
+  // Автор комментария может управлять своим комментарием
+  if (isCommentOwner(comment)) {
+    return true
+  }
+  // Автор поста может управлять любыми комментариями
+  if (isOwner.value) {
+    return true
+  }
+  return false
+}
 function startEdit(id: string) {
   editingCommentId.value = id
   const comment = comments.value.find((e) => e.id == id)
@@ -157,15 +215,48 @@ function startEdit(id: string) {
 }
 async function editDescription() {
   await mediaStore.updatePost(currentPost.value.id, editingNewTextDescription.value)
-  currentPost.value.caption = editingNewTextDescription.value
+  if (currentPost.value) {
+    currentPost.value = {
+      ...currentPost.value,
+      caption: editingNewTextDescription.value,
+    }
+  }
+}
+async function likeOrUnlikeThisPost() {
+  if (!currentPost.value) return
+
+  const liked = likeStore.isPostLiked(currentPost.value.id)
+  const change = liked ? -1 : 1
+
+  if (liked) {
+    await likeStore.unlikePost(currentPost.value.id)
+  } else {
+    await likeStore.likePost(currentPost.value.id)
+  }
+
+  currentPost.value._count.likes += change
+  currentPost.value = { ...currentPost.value }
+}
+async function likeOrUnlikeThisComment(commentId: string) {
+  const index = comments.value.findIndex((e) => e.id == commentId)
+  if (index === -1) return
+
+  const liked = likeStore.isCommentLiked(commentId)
+
+  if (liked) {
+    await likeStore.unlikeComment(commentId)
+  } else {
+    await likeStore.likeComment(commentId)
+  }
+
+  comments.value[index]._count.likes += liked ? -1 : 1
+  comments.value = [...comments.value]
 }
 function openSettings(comment: any, event: MouseEvent) {
-  openComment.value = comment
+  selectedComment.value = comment
   isCommentSettingOpen.value = true
   commentId.value = comment.id
-  async function likePost() {
-    isLiked.value = true
-  }
+
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
 
   menuPosition.value = {
@@ -178,6 +269,11 @@ onMounted(async () => {
   if (!currentPost.value?.id) return
   editingNewTextDescription.value = currentPost.value?.caption || ''
   await commentStore.fetchComments(currentPost.value.id)
+  await likeStore.initPostLikes()
+  await likeStore.initCommentLikes()
+
+  currentPost.value = { ...currentPost.value }
+  comments.value = [...comments.value]
 })
 
 const addComment = async () => {
@@ -403,6 +499,7 @@ const addComment = async () => {
 .comment_author {
   font-weight: bold;
   margin-bottom: 4px;
+  font-size: 22px;
 }
 
 .comment_body {
@@ -451,5 +548,26 @@ const addComment = async () => {
 .global_like img {
   width: 25px;
   filter: invert();
+}
+.comment_like {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.comment_like img {
+  width: 20px;
+  filter: invert();
+}
+.comment_footer {
+  display: flex;
+}
+.comment_statistic {
+  display: flex;
+  font-size: 20px;
+  gap: 5px;
+  align-items: center;
+}
+.comment_likeCount {
+  margin-right: 10px;
 }
 </style>
