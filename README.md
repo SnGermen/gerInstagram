@@ -1,42 +1,177 @@
-# GERINSTAGRAM
+# GerInstagram
 
-This template should help get you started developing with Vue 3 in Vite.
+A full-stack Instagram-inspired social media platform built as a learning project. Features a Vue 3 SPA frontend and a RESTful Express API backend with PostgreSQL.
 
-## Recommended IDE Setup
+---
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Tech Stack
 
-## Recommended Browser Setup
+**Frontend**
+- Vue 3 + TypeScript
+- Vite
+- Pinia (state management)
+- Vue Router
+- Axios
+- CSS / SCSS
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+**Backend**
+- Node.js + Express 5
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- JWT authentication
+- Multer (file uploads)
+- Swagger / OpenAPI docs
 
-## Type Support for `.vue` Imports in TS
+**Infrastructure**
+- Docker + Docker Compose
+- Prisma Migrations
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
+## Features
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- 👥 Follows — coming soon
+- 📖 Stories — coming soon
+- 💬 Direct messages — coming soon
 
-## Project Setup
+---
 
-```sh
+## Project Structure
+
+```
+GerInstagram/
+├── src/                  # Vue 3 frontend
+│   ├── components/
+│   ├── views/
+│   ├── stores/           # Pinia stores
+│   ├── router/
+│   └── styles/
+└── in-api/               # Express backend
+    ├── src/
+    │   ├── modules/      # Feature modules (auth, posts, follows...)
+    │   ├── middleware/
+    │   ├── routes/
+    │   └── config/
+    ├── prisma/
+    │   └── schema.prisma
+    └── docker-compose.yml
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js `^20.19.0` or `>=22.12.0`
+- Docker + Docker Compose
+
+---
+
+### Step 1 — Clone the repo
+
+```bash
+git clone https://github.com/your-username/GerInstagram.git
+cd GerInstagram
+```
+
+### Step 2 — Install frontend dependencies
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Step 3 — Install backend dependencies
 
-```sh
-npm run dev
+```bash
+cd in-api
+npm install
 ```
 
-### Type-Check, Compile and Minify for Production
+### Step 4 — Configure environment
 
-```sh
-npm run build
+The defaults in `in-api/.env` work out of the box. The only value you should change is `JWT_SECRET`:
+
+```env
+JWT_SECRET=your_secret_here
+```
+
+### Step 5 — Start the database
+
+```bash
+docker compose up -d db
+```
+
+### Step 6 — Run database migrations
+
+```bash
+npm run prisma:migrate
+```
+
+### Step 7 — Seed demo data
+
+> ⚠️ Optional — skip this if you don't need demo data
+
+```bash
+npm run prisma:seed
+```
+
+---
+
+### Running the project
+
+Open **two terminals**:
+
+**Terminal 1 — backend:**
+```bash
+cd in-api
+npm run dev
+# API running at http://localhost:3000
+```
+
+**Terminal 2 — frontend:**
+```bash
+cd GerInstagram
+npm run dev
+# App running at http://localhost:5173
+```
+
+---
+
+## Environment Variables
+
+### Backend (`in-api/.env`)
+
+| Variable | Description | Default |
+|---|---|---|
+| `PORT` | Server port | `3000` |
+| `NODE_ENV` | Environment | `development` |
+| `DATABASE_URL` | PostgreSQL connection string | — |
+| `JWT_SECRET` | Secret for signing tokens | `change_me` |
+| `BCRYPT_SALT_ROUNDS` | bcrypt rounds | `10` |
+
+### Frontend (`.env.local`)
+
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_API_URL` | Backend API base URL | `http://localhost:3000/api/v1` |
+
+---
+
+## API Docs
+
+Swagger UI is available at `http://localhost:3000/api-docs` when the backend is running.
+
+---
+
+## Database Schema
+
+Key models: `User`, `Post`, `Comment`, `Story`, `Follow`, `Notification`, `Report`, `BanLog`, `Media`
+
+Run Prisma Studio to browse data:
+
+```bash
+cd in-api
+npx prisma studio
 ```
